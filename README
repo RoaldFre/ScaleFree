@@ -1,0 +1,15 @@
+Evolutionary game theory on scale free networks
+
+This is an implementation (in the Chapel programming language) of the 
+prisoner's dilemma on scale free networks, based on [1].
+
+Note: this also serves as a first introduction to Chapel for me.
+
+Author: Roald Frederickx <roald.frederickx@gmail.com>
+
+
+References:
+[1] Santos, F. C., Pacheco, J. M., 2005. Scale-free networks provide a 
+    unifying framework for the emergence of cooperation. Phys. Rev. Lett. 
+    95, 098104.
+
