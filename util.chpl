@@ -12,12 +12,20 @@ module util {
         var nums: [1..N] int; 
         var i = 0;
         while (i < N) {
-            var newNum = lo + floor(rstream.getNext() * (hi - lo + 1)) : int;
+            var newNum = randomInt(lo, hi, rstream);
             if contains(nums[1..i], newNum) then continue; /* other number */
             i += 1;
             nums[i] = newNum;
         }
         [(x,n) in (X,nums)] x = n;
+    }
+
+    proc fillRandomInts(out X: [], lo:int, hi:int, rstream) {
+        [x in X] x = randomInt(lo, hi, rstream);
+    }
+
+    proc randomInt(lo, hi, rstream): int {
+        return lo + floor(rstream.getNext() * (hi - lo + 1)) : int;
     }
 
     proc contains(X, elem) {

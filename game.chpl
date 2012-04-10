@@ -32,6 +32,7 @@ module game {
         proc move() return myMove;
 
         proc getNeighbours() return neighbours[1..numNeighbours];
+        proc getNeighbour(i) return neighbours[i];
 
         /* Link this node with the given node by creating an edge between 
          * them. */
@@ -43,6 +44,10 @@ module game {
         proc seedStrategy(probOfCooperating, rstream) {
             myMove = if rstream.getNext() < probOfCooperating then
                     Move.cooperate else Move.defect;
+        }
+
+        proc stealStrategy(other: Node) {
+            this.myMove = other.myMove;
         }
 
         proc writeThis(w : Writer) {
@@ -121,6 +126,7 @@ module game {
         const graph: Graph;
         const payoffsD: domain((/* your */Move, /* opponents's */Move));
         var payoffs: [payoffsD] real;
+        var D: real; /* see replicate() */
 
         /*
          * These are the payoff you get when:
@@ -130,9 +136,10 @@ module game {
          * you cooperate |  R (mutual coop) |  T (exploited)
          * you defect    |  S (exploiting)  |  P (mutual defect)
          */
-        proc Game(T, R, S, P, graph) {
+        proc Game(T, R, S, P, D, graph) {
             initPayoffsD();
             this.graph = graph;
+            this.D = D;
             payoffs[(Move.cooperate, Move.cooperate)] = R;
             payoffs[(Move.cooperate, Move.defect   )] = T;
             payoffs[(Move.defect,    Move.cooperate)] = S;
@@ -155,6 +162,34 @@ module game {
             a.payoff += payoffs[(aMov, bMov)];
             b.payoff += payoffs[(bMov, aMov)];
         }
+        
+        /* Run the replicator dynamics:
+         * - Pick 'fraction * number_of_nodes' nodes at random.
+         * - For every node: pick one of its neighbours at random.
+         * - If the neighbour has a better payoff, switch to his 
+         *   strategy with a probability equal to
+         *     prob = delta_payoff / (D * max_numNeighbours)
+         *   where max_numNeighbours is the maximum of the number of 
+         *   neighbours of the two nodes.
+         * */
+        proc replicate(fraction) {
+            var rstream = new RandomStream();
+            var indices: [1 .. (fraction * graph.numNodes): int] int;
+            fillRandomInts(indices, 1, graph.numNodes, rstream);
+            for i in indices do replicate(graph.nodes[i], rstream);
+        }
+        proc replicate(node, rstream) {
+            if node.numNeighbours <= 0 then return;
+            const neighIndex = randomInt(1, node.numNeighbours, rstream);
+            var neighbour = node.getNeighbour(neighIndex);
+            if node.payoff > neighbour.payoff then return;
+            var deltaPayoff = neighbour.payoff - node.payoff;
+            var maxNumNeighbours = max(node.numNeighbours,
+                                       neighbour.numNeighbours);
+            var prob = deltaPayoff / (D * maxNumNeighbours);
+            if rstream.getNext() > prob then return;
+            node.stealStrategy(neighbour);
+        }
 
         //TODO Find better way so I don't have to do this manually!
         proc initPayoffsD() {
@@ -167,13 +202,13 @@ module game {
 
     /* Prisoners Dilemma.
      * Rescaled the game scores and reduced to a single parameter */
-    proc PD(b, graph) return new Game(b, 1, 0, 0, graph);
+    proc PD(b, graph) return new Game(b, 1, 0, 0, b, graph);
 
     /* Snowdrift Game.
      * Rescaled the game scores and reduced to a single parameter */
     proc SG(r, graph) {
         var beta = ((1/r) + 1) / 2;
-        return new Game(beta, beta - 1/2, beta - 1, 0, graph);
+        return new Game(beta, beta - 1/2, beta - 1, 0, beta, graph);
     }
 
     proc main() {
@@ -181,6 +216,7 @@ module game {
         g.seedStrategies(0.5);
         var pd = PD(1.5, g);
         pd.play();
+        pd.replicate(0.1);
         writeln(g);
     }
 }
