@@ -154,16 +154,16 @@ module game {
          *
          *               | other cooperates |   other defects
          * --------------+------------------+-------------------
-         * you cooperate |  R (mutual coop) |  T (exploited)
-         * you defect    |  S (exploiting)  |  P (mutual defect)
+         * you cooperate |  R (mutual coop) |  S (exploited)
+         * you defect    |  T (exploiting)  |  P (mutual defect)
          */
         proc Game(T, R, S, P, D, graph) {
             initPayoffsD();
             this.graph = graph;
             this.D = D;
             payoffs[(Move.cooperate, Move.cooperate)] = R;
-            payoffs[(Move.cooperate, Move.defect   )] = T;
-            payoffs[(Move.defect,    Move.cooperate)] = S;
+            payoffs[(Move.cooperate, Move.defect   )] = S;
+            payoffs[(Move.defect,    Move.cooperate)] = T;
             payoffs[(Move.defect,    Move.defect   )] = P;
         }
 
