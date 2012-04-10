@@ -1,2 +1,2 @@
 all:
-	chpl graph.chpl -o graph
+	chpl game.chpl -o game --baseline --fast --no-optimize --debug
