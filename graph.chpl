@@ -22,13 +22,18 @@ module graph {
 
         //private
         proc addNeighbour(other : Node) {
-            //TODO locking does not work...
-            var unlock$ : sync bool = false; /* lock */
-            numNeighbours += 1;
-            if (numNeighbours > neighbours.numElements) then
-                neighboursD = [1..2*numNeighbours];
-            neighbours[numNeighbours] = other;
-            unlock$; /* unlock */
+            //atomic { //NOT IMPLEMENTED YET!!
+                numNeighbours += 1;
+                if (numNeighbours > neighbours.numElements) then
+                    neighboursD = [1..2*numNeighbours];
+                neighbours[numNeighbours] = other;
+            //}
+            /* Note: this still gives potential problems if thread1 reads 
+             * an old numNeighbours first, then a neighbour gets added by 
+             * thread2 and then thread1 does something with the neighbours 
+             * (ie it doesn't know that there is an extra one...) Problem?
+             *
+             * Either way, atomic isn't implemented yet in chpl... */
         }
     }
 
@@ -47,13 +52,12 @@ module graph {
         var nodes : [nodesD] Node;
 
         proc addNode(node : Node) {
-            //TODO locking does not work...
-            var unlock$ : sync bool = false; /* lock */
-            numNodes += 1;
-            if (numNodes >= nodes.numElements) then
-                nodesD = [1..2*numNodes];
-            nodes[numNodes] = node;
-            unlock$; /* unlock */
+            //atomic { //NOT IMPLEMENTED YET!!
+                numNodes += 1;
+                if (numNodes >= nodes.numElements) then
+                    nodesD = [1..2*numNodes];
+                nodes[numNodes] = node;
+            //}
         }
         proc writeThis(w : Writer) {
             w.write("Graph N=",numNodes," {",nodes[1..numNodes],"}");
@@ -62,25 +66,49 @@ module graph {
 
     /* Grow a scale-free network through growth and preferential attachment 
      * according to the Barabasi and Albert Model.
-     * N must be larger than m */
+     * start with m0 nodes
+     * add nodes and connect them to m previous random nodes
+     * N must be larger than m, m0 must be larger or equal to m */
     proc BAM(m0: int, m: int, N: int) : Graph {
         var nodes = [i in 1..N] new Node(i);
         var rstream = new RandomStream();
-        for i in m..(N-1) {
-            //TODO can connect multiple times!!
-            var rands : [1..m] real;
-            rstream.fillRandom(rands);
-            var indices = 1 + floor(rands * i) : int;
-            //[j in indices] nodes[i+1].edge(nodes[j]); //TODO locking doesn't work
-            for j in indices do nodes[i+1].edge(nodes[j]);
+        var randIndices : [1..m] int;
+        for i in (m0+1)..N {
+            fillDistinctRandomInts(randIndices, 1, i-1, rstream);
+            for j in randIndices do nodes[i].edge(nodes[j]);
         }
-        writeln(nodes);
         return new Graph(nodes);
     }
 
+    /* Fill X with random integers between lo and hi (inclusive). Note that 
+     * if X.numElements > hi-lo, you are screwed (infinite loop).
+     * Sidenote/TODO: if |X| almost equal to hi-lo, propably faster to do a 
+     * permutation shuffle of lo..hi and then a slice. */
+    proc fillDistinctRandomInts(out X: [], lo:int, hi:int, rstream) {
+        const N = X.numElements;
+        //TODO we build our own array, because we can't assume that X is 0 
+        //or 1 indexed, nor that it is integer indexed even! -- better way? 
+        //eg filling X with nil first, and then looping over it to check 
+        //for doubles?
+        var nums: [1..N] int; 
+        var i = 0;
+        while (i < N) {
+            var newNum = lo + floor(rstream.getNext() * (hi - lo + 1)) : int;
+            if contains(nums[1..i], newNum) then continue; /* other number */
+            i += 1;
+            nums[i] = newNum;
+        }
+        [(x,n) in (X,nums)] x = n;
+    }
+
+    proc contains(X, elem) {
+        for x in X do //can't return from forall, so doing it serially
+            if x == elem then return true;
+        return false;
+    }
+
     proc main() {
-        var A : [1..10] real;
-        var g = BAM(10,2,50);
+        var g = BAM(2,2,50);
         writeln(g);
     }
 }
