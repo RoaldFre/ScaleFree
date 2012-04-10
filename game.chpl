@@ -88,11 +88,6 @@ module game {
             for n in theNodes do addNode(n);
         }
 
-        //private
-        var numNodes = 0;
-        var nodesD = [1..1];
-        var nodes : [nodesD] Node;
-
         proc addNode(node : Node) {
             //atomic { //NOT IMPLEMENTED YET!!
                 numNodes += 1;
@@ -117,6 +112,11 @@ module game {
         proc writeThis(w : Writer) {
             w.write("Graph N=",numNodes," {",nodes[1..numNodes],"}");
         }
+
+        //private
+        var numNodes = 0;
+        var nodesD = [1..1];
+        var nodes : [nodesD] Node;
     }
 
     /* Grow a scale-free network through growth and preferential attachment 
@@ -124,7 +124,7 @@ module game {
      * start with m0 nodes
      * add nodes and connect them to m previous random nodes
      * N must be larger than m, m0 must be larger or equal to m */
-    proc BAM(m0: int, m: int, N: int) : Graph {
+    proc BAM(m0: int, m: int, N: int): Graph {
         var nodes = [i in 1..N] new Node(i);
         var rstream = new RandomStream();
         var randIndices : [1..m] int;
@@ -132,6 +132,14 @@ module game {
             fillDistinctRandomInts(randIndices, 1, i-1, rstream);
             for j in randIndices do nodes[i].edge(nodes[j]);
         }
+        return new Graph(nodes);
+    }
+
+    /* Graph is a circle: all nodes have two neighbours on each side. */
+    proc regularCircleGraph(N): Graph {
+        var nodes = [i in 1..N] new Node(i);
+        for i in 2..N do nodes[i-1].edge(nodes[i]);
+        nodes[N].edge(nodes[1]);
         return new Graph(nodes);
     }
 
@@ -204,6 +212,15 @@ module game {
             node.stealStrategy(neighbour);
         }
 
+        proc evolve(iterations, replicationFraction) {
+            for i in [1..iterations] {
+                play();
+                replicate(replicationFraction);
+                var totPayoff = + reduce graph.getNodes().payoff;
+                writeln(graph.averageCooperativity(), "\t", totPayoff);
+            }
+        }
+
         //TODO Find better way so I don't have to do this manually!
         proc initPayoffsD() {
             payoffsD += (Move.cooperate, Move.cooperate);
@@ -224,14 +241,21 @@ module game {
         return new Game(beta, beta - 1/2, beta - 1, 0, beta, graph);
     }
 
+
+    config const b = 1.5;
+    config const m0 = 2;
+    config const m = 2;
+    config const N = 50;
+    config const initialCooperativity = 0.5;
+    config const iterations = 100;
+    config const fraction = 0.1;
+
     proc main() {
-        var g = BAM(2,2,50);
-        g.seedStrategies(0.5);
-        var pd = PD(1.5, g);
-        writeln(g.averageCooperativity());
-        pd.play();
-        pd.replicate(0.1);
-        writeln(g.averageCooperativity());
+        //var g = BAM(m0, m, N);
+        var g = regularCircleGraph(N);
+        g.seedStrategies(initialCooperativity);
+        var pd = PD(b, g);
+        pd.evolve(iterations, fraction);
     }
 }
 
