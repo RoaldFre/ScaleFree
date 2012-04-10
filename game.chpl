@@ -50,6 +50,14 @@ module game {
             this.myMove = other.myMove;
         }
 
+        proc cooperativity(): real {
+            select myMove {
+                when Move.cooperate do return 1;
+                when Move.defect    do return 0;
+                otherwise {assert(false); return -1;}
+            }
+        }
+
         proc writeThis(w : Writer) {
             w.write("<Node ",id," {",payoff,"} [",neighbours[1..numNeighbours].id,"]>");
         }
@@ -99,6 +107,11 @@ module game {
         proc seedStrategies(probOfCooperating) {
             var rstream = new RandomStream();
             [n in getNodes()] n.seedStrategy(probOfCooperating, rstream);
+        }
+
+        proc averageCooperativity() {
+            var sum = + reduce getNodes().cooperativity();
+            return sum/numNodes;
         }
 
         proc writeThis(w : Writer) {
@@ -215,9 +228,10 @@ module game {
         var g = BAM(2,2,50);
         g.seedStrategies(0.5);
         var pd = PD(1.5, g);
+        writeln(g.averageCooperativity());
         pd.play();
         pd.replicate(0.1);
-        writeln(g);
+        writeln(g.averageCooperativity());
     }
 }
 
