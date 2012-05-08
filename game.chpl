@@ -9,10 +9,9 @@ module game {
         //needs to be unique for every node
         const id: int;
 
+        //private
         var payoff = 0.0;
         var myMove: Move;
-
-        //private
         var numNeighbours = 0;
         var neighboursD = [1..1];
         var neighbours : [neighboursD] Node;
@@ -195,13 +194,12 @@ module game {
         
         /* Run the replicator dynamics:
          * - Pick 'fraction * number_of_nodes' nodes at random.
-         * - For every node: pick one of its neighbours at random.
+         * - For every selected node: pick one of its neighbours at random.
          * - If the neighbour has a better payoff, switch to his 
          *   strategy with a probability equal to
          *     prob = delta_payoff / (D * max_numNeighbours)
          *   where max_numNeighbours is the maximum of the number of 
-         *   neighbours of the two nodes.
-         * */
+         *   neighbours of the two nodes. */
         proc replicate(fraction) {
             var rstream = new RandomStream();
             var indices: [1 .. (fraction * graph.numNodes): int] int;
@@ -210,9 +208,9 @@ module game {
         }
         proc replicate(node, rstream) {
             if node.numNeighbours <= 0 then return;
-            const neighIndex = randomInt(1, node.numNeighbours, rstream);
+            var neighIndex = randomInt(1, node.numNeighbours, rstream);
             var neighbour = node.getNeighbour(neighIndex);
-            if node.payoff > neighbour.payoff then return;
+            if node.payoff >= neighbour.payoff then return;
             var deltaPayoff = neighbour.payoff - node.payoff;
             var maxNumNeighbours = max(node.numNeighbours,
                                        neighbour.numNeighbours);
