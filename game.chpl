@@ -167,13 +167,14 @@ module game {
             payoffs[(Move.defect,    Move.defect   )] = P;
         }
 
-        /* Play a single round of the game, sets the payoff. */
+        /* Play a single round of the game, sets the average payoff. */
         proc play() {
             [node in graph.getNodes()] node.payoff = 0;
             for node in graph.getNodes() do
                 for neigh in node.getNeighbours() do
                     if node.id < neigh.id then /* avoid double playing */
                         play(node, neigh);
+            [node in graph.getNodes()] node.payoff /= node.numNeighbours;
         }
 
         //private
@@ -216,8 +217,9 @@ module game {
             for i in [1..iterations] {
                 play();
                 replicate(replicationFraction);
-                var totPayoff = + reduce graph.getNodes().payoff;
-                writeln(graph.averageCooperativity(), "\t", totPayoff);
+                var avgPayoff = (+ reduce graph.getNodes().payoff)
+                                                / graph.numNodes;
+                writeln(graph.averageCooperativity(), "\t", avgPayoff);
             }
         }
 
