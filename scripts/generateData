@@ -1,0 +1,33 @@
+#!/bin/sh
+
+main=../game
+
+graphType=$1
+N=$2
+z=$3
+replFraction=$4
+initialCoop=$5
+gameType=$6
+paramLow=$7
+paramStep=$8
+paramHigh=$9
+iterations=${10}
+
+cmdBase="$main --graphType=$graphType --N=$N --z=$z --fraction=$replFraction --initialCooperativity=$initialCoop --gameType=$gameType --iterations=$iterations"
+
+filenameBase="data_${gameType}_${graphType}_${N}_${z}"
+
+for param in `seq $paramLow $paramStep $paramHigh`
+do
+	echo "param = $param"
+	cmd="$cmdBase --b=$param --r=$param"
+	filename="${filenameBase}_${param}"
+
+	echo $param > $filename
+	$cmd >> $filename
+done
+
+allFiles=`seq $paramLow $paramStep $paramHigh | xargs printf "${filenameBase}_%s "`
+pr -tm $allFiles > ${filenameBase}
+rm $allFiles
+

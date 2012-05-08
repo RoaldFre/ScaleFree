@@ -1,0 +1,17 @@
+#!/bin/sh
+
+N=1000
+z=4
+iterations=100
+
+paramLow="0"
+paramStep="0.1"
+paramHigh="1"
+
+replFraction="0.8"
+initialCoop="0.5"
+
+graphType=BAM
+gameType=SG
+
+./generateData $graphType $N $z $replFraction $initialCoop $gameType $paramLow $paramStep $paramHigh $iterations
