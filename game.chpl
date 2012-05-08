@@ -143,6 +143,14 @@ module game {
         return new Graph(nodes);
     }
 
+    proc fullyConnectedGraph(N): Graph {
+        var nodes = [i in 1..N] new Node(i);
+        for i in [1 .. N] do
+            for j in [i + 1 .. N] do
+                nodes[i].edge(nodes[j]);
+        return new Graph(nodes);
+    }
+
     class Game {
         const graph: Graph;
         const payoffsD: domain((/* your */Move, /* opponents's */Move));
@@ -244,20 +252,23 @@ module game {
     }
 
 
+    config const r = 0.5;
     config const b = 1.5;
     config const m0 = 2;
     config const m = 2;
     config const N = 50;
     config const initialCooperativity = 0.5;
     config const iterations = 100;
-    config const fraction = 0.1;
+    config const fraction = 0.5;
 
     proc main() {
         //var g = BAM(m0, m, N);
-        var g = regularCircleGraph(N);
+        //var g = regularCircleGraph(N);
+        var g = fullyConnectedGraph(N);
         g.seedStrategies(initialCooperativity);
-        var pd = PD(b, g);
-        pd.evolve(iterations, fraction);
+        //var game = PD(b, g);
+        var game = SG(r, g);
+        game.evolve(iterations, fraction);
     }
 }
 
