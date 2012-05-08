@@ -50,8 +50,8 @@ module gameTest {
         n1.myMove = Move.cooperate;
         n2.myMove = Move.cooperate;
         game.play();
-        assert(n1.payoff == beta - 1/2);
-        assert(n2.payoff == beta - 1/2);
+        assert(n1.payoff == beta - 0.5);
+        assert(n2.payoff == beta - 0.5);
 
         n1.myMove = Move.cooperate;
         n2.myMove = Move.defect;

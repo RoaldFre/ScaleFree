@@ -157,7 +157,7 @@ module game {
          * you cooperate |  R (mutual coop) |  S (exploited)
          * you defect    |  T (exploiting)  |  P (mutual defect)
          */
-        proc Game(T, R, S, P, D, graph) {
+        proc Game(R, S, T, P, D, graph) {
             initPayoffsD();
             this.graph = graph;
             this.D = D;
@@ -232,13 +232,13 @@ module game {
 
     /* Prisoners Dilemma.
      * Rescaled the game scores and reduced to a single parameter */
-    proc PD(b, graph) return new Game(b, 1, 0, 0, b, graph);
+    proc PD(b, graph) return new Game(1, 0, b, 0, b, graph);
 
     /* Snowdrift Game.
      * Rescaled the game scores and reduced to a single parameter */
     proc SG(r, graph) {
-        var beta = ((1/r) + 1) / 2;
-        return new Game(beta, beta - 1/2, beta - 1, 0, beta, graph);
+        var beta = (1 + r) / (2 * r);
+        return new Game(beta - 0.5, beta - 1, beta, 0, beta, graph);
     }
 
 
