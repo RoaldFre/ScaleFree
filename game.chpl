@@ -134,11 +134,17 @@ module game {
         return new Graph(nodes);
     }
 
-    /* Graph is a circle: all nodes have two neighbours on each side. */
-    proc regularCircleGraph(N): Graph {
+    /* Graph is a kind of 'circle', where every node is connected to d 
+     * neighbours. */
+    proc regularCircleGraph(N, d): Graph {
         var nodes = [i in 1..N] new Node(i);
-        for i in 2..N do nodes[i-1].edge(nodes[i]);
-        nodes[N].edge(nodes[1]);
+
+        /* Could be optimized for cache performance, but we only need to do 
+         * this once anyway. */
+        for delta in 1..d { /* connect node j and j+delta (mod N) */
+            for i in  1..(N-delta)  do nodes[i].edge(nodes[i+delta]);
+            for i in (N-delta+1)..N do nodes[i].edge(nodes[i+delta-N]);
+        }
         return new Graph(nodes);
     }
 
