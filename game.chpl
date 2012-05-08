@@ -229,9 +229,12 @@ module game {
             for i in [1..iterations] {
                 play();
                 replicate(replicationFraction);
+                /*
                 var avgPayoff = (+ reduce graph.getNodes().payoff)
                                                 / graph.numNodes;
                 writeln(graph.averageCooperativity(), "\t", avgPayoff);
+                */
+                writeln(graph.averageCooperativity());
             }
         }
 
@@ -256,22 +259,43 @@ module game {
     }
 
 
-    config const r = 0.5;
-    config const b = 1.5;
-    config const m0 = 2;
-    config const m = 2;
+
+    /* GRAPH PARAMETERS */
     config const N = 50;
     config const initialCooperativity = 0.5;
+    config const graphType = "BAM"; /* "BAM", "regular" or "fullyConnected" */
+    config const z = 4; /* (average) degree of the nodes. Must be a 
+                           multiple of 2 to be sensible for BAM */
+
+    /* GAME PARAMETERS */
     config const iterations = 100;
     config const fraction = 0.5;
 
+    config const gameType = "SG"; /* "SG" or "PD" */
+    config const r = 0.5; /* for SG */
+    config const b = 1.5; /* for PD */
+
     proc main() {
-        //var g = BAM(m0, m, N);
-        //var g = regularCircleGraph(N);
-        var g = fullyConnectedGraph(N);
-        g.seedStrategies(initialCooperativity);
-        //var game = PD(b, g);
-        var game = SG(r, g);
+        var graph: Graph;
+        select graphType {
+            when "BAM"            do graph = BAM(z/2, z/2, N);
+            when "regular"        do graph = regularCircleGraph(N, z);
+            when "fullyConnected" do graph = fullyConnectedGraph(N);
+            otherwise {
+                writeln("Unknown graph type '",graphType,"'!");
+                return;
+            }
+        }
+        var game: Game;
+        select gameType {
+            when "SG" do game = SG(r, graph);
+            when "PD" do game = PD(b, graph);
+            otherwise {
+                writeln("Unknown game type '",gameType,"'!");
+                return;
+            }
+        }
+        graph.seedStrategies(initialCooperativity);
         game.evolve(iterations, fraction);
     }
 }
