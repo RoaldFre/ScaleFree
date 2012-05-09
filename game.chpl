@@ -253,7 +253,13 @@ module game {
 
     /* Snowdrift Game.
      * Rescaled the game scores and reduced to a single parameter */
-    proc SG(r, graph) {
+    proc SG(rParam, graph) {
+        var r = rParam;
+        if (r <= 0) {
+            r = 0.001;
+            stderr.writeln("SG: r was too low, setting to ",r);
+        }
+
         var beta = (1 + r) / (2 * r);
         return new Game(beta - 0.5, beta - 1, beta, 0, beta, graph);
     }
