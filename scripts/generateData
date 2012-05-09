@@ -27,7 +27,20 @@ do
 	$cmd >> $filename
 done
 
+cat << EOF > $filenameBase
+% graphType = $graphType
+% N = $N
+% z = $z
+% replFraction = $replFraction
+% initialCoop = $initialCoop
+% gameType = $gameType
+% paramLow = $paramLow
+% paramStep = $paramStep
+% paramHigh = $paramHigh
+% iterations = $iterations
+EOF
+
 allFiles=`seq $paramLow $paramStep $paramHigh | xargs printf "${filenameBase}_%s "`
-pr -tm $allFiles > ${filenameBase}
+pr -tmJ -w100000 $allFiles >> ${filenameBase}
 rm $allFiles
 
