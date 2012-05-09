@@ -121,14 +121,17 @@ module game {
     /* Grow a scale-free network through growth and preferential attachment 
      * according to the Barabasi and Albert Model.
      * start with m0 nodes
-     * add nodes and connect them to m previous random nodes
+     * add nodes and connect them to m previous random nodes with 
+     * probability of selecting a neighbour proportional to the degrees of 
+     * connectivity of that neighbour.
      * N must be larger than m, m0 must be larger or equal to m */
     proc BAM(m0: int, m: int, N: int): Graph {
         var nodes = [i in 1..N] new Node(i);
         var rstream = new RandomStream();
         var randIndices : [1..m] int;
         for i in (m0+1)..N {
-            fillDistinctRandomInts(randIndices, 1, i-1, rstream);
+            var weights = nodes[1..i-1].numNeighbours;
+            fillWeightedIndices(randIndices, weights, rstream);
             for j in randIndices do nodes[i].edge(nodes[j]);
         }
         return new Graph(nodes);
