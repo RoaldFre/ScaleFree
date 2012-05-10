@@ -10,67 +10,86 @@ gameType=$5
 paramLow=$6
 paramStep=$7
 paramHigh=$8
-iterations=$9
-runs=${10}
+nIterations=$9
+nRuns=${10}
 
-cmdBase="$main --graphType=$graphType --N=$N --z=$z --initialCooperativity=$initialCoop --gameType=$gameType --iterations=$iterations"
+nParams=`seq $paramLow $paramStep $paramHigh | wc -l`
 
+cmdBase="$main --graphType=$graphType --N=$N --z=$z --initialCooperativity=$initialCoop --gameType=$gameType --iterations=$nIterations"
 
-function writeTabulatedRuns {
-	fileBaseName=$1
-	num=$2
-
-	allFiles=`seq 1 $num | xargs printf "${fileBaseName}_%s "`
-	pr -tmJ -w100000 $allFiles > ${fileBaseName}
-	rm $allFiles
+function dumpScalar {
+	name=$1
+	value=$2
+	echo "# name: $name"
+	echo "# type: scalar"
+	echo "$value"
 }
 
-filename="data_${gameType}_${graphType}_${N}_${z}.m"
+function dumpString {
+	name=$1
+	value=$2
+	length=`echo -e $value | wc -c`
+	echo "# name: $name"
+	echo "# type: string"
+	echo "# elements: 1"
+	echo "# length: $length"
+	echo "$value"
+}
 
-cat << EOF > $filename
-graphType = "$graphType";
-gameType = "$gameType";
-nNodes = $N;
-averageDegree = $z;
-initialCoop = $initialCoop;
-paramLow = $paramLow;
-paramStep = $paramStep;
-paramHigh = $paramHigh;
-nIterations = $iterations;
-nRuns = $runs;
+function dumpMatrixHeader {
+	name=$1
+	nx=$2
+	ny=$3
+	echo "# name: $name"
+	echo "# type: matrix"
+	echo "# rows: $nx"
+	echo "# columns: $ny"
+}
 
-EOF
+function dump3DMatrixHeader {
+	name=$1
+	nx=$2
+	ny=$3
+	nz=$4
+	echo "# name: $name"
+	echo "# type: matrix"
+	echo "# ndims: 3"
+	echo "$nx $ny $nz"
+}
 
+file="data_${gameType}_${graphType}_${N}_${z}"
+
+echo    "# Octave data file that holds simulation data"  > $file
+echo -n "# Created on " >> $file
+date >> $file
+
+dumpString "graphType" 		"$graphType"	>> $file
+dumpString "gameType"		"$gameType"	>> $file
+dumpScalar "nNodes"		$N		>> $file
+dumpScalar "averageDegree"	$z		>> $file
+dumpScalar "initialCoop"	$initialCoop	>> $file
+dumpScalar "paramLow"		$paramLow	>> $file
+dumpScalar "paramStep"		$paramStep	>> $file
+dumpScalar "paramHigh"		$paramHigh	>> $file
+dumpScalar "nIterations"	$nIterations	>> $file
+dumpScalar "nRuns" 		$nRuns		>> $file
+
+
+
+dumpMatrixHeader "params" $nParams 1 >> $file
+seq $paramLow $paramStep $paramHigh >> $file
+
+
+dump3DMatrixHeader "cooperativities" $nIterations $nRuns $nParams >> $file
 for param in `seq $paramLow $paramStep $paramHigh`
 do
-	thisParamFile=${filename}_${param}
-	for run in `seq 1 $runs`
+	thisParamFile=${file}_${param}
+	for run in `seq 1 $nRuns`
 	do
-		echo "param = $param, run $run of $runs"
+		echo "param = $param, run $run of $nRuns"
 		cmd="$cmdBase --b=$param --r=$param"
 
-		$cmd >> ${thisParamFile}_${run}
+		$cmd >> ${file}
 	done
-
-
-	writeTabulatedRuns $thisParamFile $runs
-
-	escapedParam=`echo $param | tr "." "p"`
-
-	echo "coop_$escapedParam = [" >> $filename
-	cat $thisParamFile >> $filename
-	echo -e "];\n" >> $filename
-
-	rm $thisParamFile
 done
-
-echo "params = [" >> $filename
-seq $paramLow $paramStep $paramHigh >> $filename
-echo -e "];\n" >> $filename
-
-echo    "cooperativities = cat(3," >> $filename
-#bit of a hack
-echo -n "           coop_" >> $filename
-seq -s ", coop_" $paramLow $paramStep $paramHigh | tr "." "p" >> $filename
-echo -e ");\n" >> $filename
 
