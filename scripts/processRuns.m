@@ -24,7 +24,10 @@ function [meanCoop, errCoop] = processRuns(coopsOfRuns, x)
 
 	%simple mean (not weigted by errors or something fancy ...)
 	meanCoop = mean(meanOfRuns); %single number: average of the cooperativity over all runs
-	%Central limit theorem
-	errCoop = norm(errOfRuns) / sqrt(nRuns); %error on meanCoop
+	%Central limit theorem:
+	errorDueToVariancesPerRun = norm(errOfRuns) / sqrt(nRuns); %error on meanCoop
+	errorDueToVarianceOfMeansOfRuns = std(meanOfRuns);
+	%TODO do error analysis thouroughly than just throwing these together!
+	errCoop = sqrt(errorDueToVariancesPerRun^2 + errorDueToVarianceOfMeansOfRuns^2);
 end
 
