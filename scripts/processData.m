@@ -9,4 +9,6 @@ for i = 1:nParams
 	errCoops(i) = errCoop;
 end
 
-errorbar(params, coops, errCoops);
+lineWidth = 4;
+h = errorbar(params, coops, errCoops);
+set(h, "linewidth", lineWidth);

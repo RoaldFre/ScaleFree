@@ -23,3 +23,7 @@ for i = 1:nZs
 end
 legend(legendEntries);
 hold off;
+
+
+plotfile = [game,"_",graph,"_",int2str(nIteranions),"_",int2str(nRuns),"_",int2str(nNodes),".png"];
+print(["plots/",plotfile], "-dpng", "-r600");

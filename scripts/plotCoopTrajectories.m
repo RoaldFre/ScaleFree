@@ -1,7 +1,7 @@
-% plotCoopTrajectories(game, graph, nNodes, z, parameters)
+% plotCoopTrajectories(game, graph, nIteranions, nRuns, nNodes, z, parameters)
 %
 % Last argument is optional (default: use all parameters in the data set)
-function processEverything(game, graph, nIteranions, nRuns, nNodes, z, parameters)
+function plotCoopTrajectories(game, graph, nIteranions, nRuns, nNodes, z, parameters)
 
 filename = ["data_",game,"_",graph,"_",int2str(nIteranions),"_",int2str(nRuns),"_",int2str(nNodes),"_",int2str(z)];
 load(filename);
@@ -34,8 +34,14 @@ for p = 1:nParams
 	for r = 1:nRuns
 		plot(cooperativities(:,r,p));
 	end
-	plot(meanTrajectory(:,p),"k");
+	h = plot(meanTrajectory(:,p),"k");
+	set(h, "linewidth", 3);
 	legend(["param = ",num2str(parameters(p))], "location", "southeast");
 	hold off;
+
+
+	plotfile = ["traj_",game,"_",graph,"_",int2str(nIteranions),"_",int2str(nRuns),"_",int2str(nNodes),"_",num2str(parameters(p)),".png"];
+	axis([0,1,0,1], 'autox');
+	print(["plots/",plotfile], "-dpng", "-r600", "-S4000,800");
 end
 
