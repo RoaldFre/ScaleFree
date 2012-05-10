@@ -214,6 +214,10 @@ module game {
             fillRandomInts(indices, 1, graph.numNodes, rstream);
             for i in indices do replicate(graph.nodes[i], rstream);
         }
+        proc replicateAll() {
+            var rstream = new RandomStream();
+            for n in graph.getNodes() do replicate(n, rstream);
+        }
         proc replicate(node, rstream) {
             if node.numNeighbours <= 0 then return;
             var neighIndex = randomInt(1, node.numNeighbours, rstream);
@@ -227,10 +231,11 @@ module game {
             node.stealStrategy(neighbour);
         }
 
-        proc evolve(iterations, replicationFraction) {
+        proc evolve(iterations) {
             for i in [1..iterations] {
                 play();
-                replicate(replicationFraction);
+                //replicate(replicationFraction);
+                replicateAll();
                 writeln(graph.averageCooperativity());
             }
         }
@@ -299,7 +304,7 @@ module game {
             }
         }
         graph.seedStrategies(initialCooperativity);
-        game.evolve(iterations, fraction);
+        game.evolve(iterations);
     }
 }
 
