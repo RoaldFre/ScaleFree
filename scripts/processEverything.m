@@ -9,11 +9,12 @@ if (nargin < 6)
 end
 
 basename = ["data_",game,"_",graph,"_",int2str(nIteranions),"_",int2str(nRuns),"_",int2str(nNodes)];
+dir = "data";
 
 clf;
 hold all;
 for z = zs
-	load([basename,"_",int2str(z)]);
+	load([dir,"/",basename,"_",int2str(z)]);
 	processData;
 end
 

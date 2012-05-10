@@ -4,7 +4,8 @@
 function plotCoopTrajectories(game, graph, nIteranions, nRuns, nNodes, z, parameters)
 
 filename = ["data_",game,"_",graph,"_",int2str(nIteranions),"_",int2str(nRuns),"_",int2str(nNodes),"_",int2str(z)];
-load(filename);
+dir = "data";
+load([dir,"/",filename]);
 
 if (nargin < 6)
 	error("Not enough arguments");
