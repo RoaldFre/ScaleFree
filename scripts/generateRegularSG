@@ -11,7 +11,7 @@ paramHigh="1"
 replFraction="0.8"
 initialCoop="0.5"
 
-graphType=BAM
+graphType=regular
 gameType=SG
 
 for z in 4 8 16 32

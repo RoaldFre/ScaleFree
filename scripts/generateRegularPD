@@ -4,15 +4,15 @@ N=1000
 #z=4
 iterations=10000
 
-paramLow="0"
+paramLow="1"
 paramStep="0.1"
-paramHigh="1"
+paramHigh="2"
 
 replFraction="0.8"
 initialCoop="0.5"
 
-graphType=BAM
-gameType=SG
+graphType=regular
+gameType=PD
 
 for z in 4 8 16 32
 do

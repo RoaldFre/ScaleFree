@@ -1,7 +1,7 @@
 function plotEquilibriumCoopPerParameter(filename, color)
 
 if nargin < 2
-	color = "b"
+	color = "b";
 end
 
 data = load(filename);
@@ -11,10 +11,11 @@ cooperativities = data(2:end, :);
 
 
 %average cooperativity for a fraction 'x' of the end of the data set
-x = 0.3;
+x = 0.1;
 
 equilibriumData = cooperativities(floor(x*end):end, :);
 equilibriumCoop = mean(equilibriumData);
+Nsamples = size(equilibriumData)(2);
 err = std(equilibriumData);
 errorbar(params, equilibriumCoop, err, color);
-axis([0,1,0,1]);
+axis([0,1,0,1],'autox');
