@@ -1,9 +1,18 @@
-function plotCoopTrajectories(game, graph, nNodes, z)
+% plotCoopTrajectories(game, graph, nNodes, z, parameters)
+%
+% Last argument is optional (default: use all parameters in the data set)
+function processEverything(game, graph, nIteranions, nRuns, nNodes, z, parameters)
 
-filename = ["data_",game,"_",graph,"_",int2str(nNodes),"_",int2str(z)];
+filename = ["data_",game,"_",graph,"_",int2str(nIteranions),"_",int2str(nRuns),"_",int2str(nNodes),"_",int2str(z)];
 load(filename);
 
-nParams = numel(params);
+if (nargin < 6)
+	error("Not enough arguments");
+elseif (nargin < 7)
+	parameters = params; %all parameters from the file
+end
+
+nParams = numel(parameters);
 
 for i = 1:nParams
 	[coop, errCoop] = processRuns(cooperativities(:,:,i));
@@ -26,7 +35,7 @@ for p = 1:nParams
 		plot(cooperativities(:,r,p));
 	end
 	plot(meanTrajectory(:,p),"k");
-	legend(["param = ",num2str(params(p))], "location", "southeast");
+	legend(["param = ",num2str(parameters(p))], "location", "southeast");
 	hold off;
 end
 

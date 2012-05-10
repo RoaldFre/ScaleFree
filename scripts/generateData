@@ -57,7 +57,7 @@ function dump3DMatrixHeader {
 	echo "$nx $ny $nz"
 }
 
-file="data_${gameType}_${graphType}_${N}_${z}"
+file="data_${gameType}_${graphType}_${nIterations}_${nRuns}_${N}_${z}"
 
 echo    "# Octave data file that holds simulation data"  > $file
 echo -n "# Created on " >> $file

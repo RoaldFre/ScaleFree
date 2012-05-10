@@ -1,8 +1,14 @@
+% processEverything(game, graph, nNodes, nIteranions, nRuns, zs)
+%
 % Processes data for various z values of the network (z = average degree of 
 % the nodes)
-function processEverything(game, graph, nNodes, zs)
+function processEverything(game, graph, nIteranions, nRuns, nNodes, zs)
 
-basename = ["data_",game,"_",graph,"_",int2str(nNodes)];
+if (nargin < 6)
+	error("Not enough arguments");
+end
+
+basename = ["data_",game,"_",graph,"_",int2str(nIteranions),"_",int2str(nRuns),"_",int2str(nNodes)];
 
 clf;
 hold all;
