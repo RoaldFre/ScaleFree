@@ -5,42 +5,72 @@ main=../game
 graphType=$1
 N=$2
 z=$3
-replFraction=$4
-initialCoop=$5
-gameType=$6
-paramLow=$7
-paramStep=$8
-paramHigh=$9
-iterations=${10}
+initialCoop=$4
+gameType=$5
+paramLow=$6
+paramStep=$7
+paramHigh=$8
+iterations=$9
+runs=${10}
 
-cmdBase="$main --graphType=$graphType --N=$N --z=$z --fraction=$replFraction --initialCooperativity=$initialCoop --gameType=$gameType --iterations=$iterations"
+cmdBase="$main --graphType=$graphType --N=$N --z=$z --initialCooperativity=$initialCoop --gameType=$gameType --iterations=$iterations"
 
-filenameBase="data_${gameType}_${graphType}_${N}_${z}"
+
+function writeTabulatedRuns {
+	fileBaseName=$1
+	num=$2
+
+	allFiles=`seq 1 $num | xargs printf "${fileBaseName}_%s "`
+	pr -tmJ -w100000 $allFiles > ${fileBaseName}
+	rm $allFiles
+}
+
+filename="data_${gameType}_${graphType}_${N}_${z}.m"
+
+cat << EOF > $filename
+graphType = "$graphType";
+gameType = "$gameType";
+nNodes = $N;
+averageDegree = $z;
+initialCoop = $initialCoop;
+paramLow = $paramLow;
+paramStep = $paramStep;
+paramHigh = $paramHigh;
+nIterations = $iterations;
+nRuns = $runs;
+
+EOF
 
 for param in `seq $paramLow $paramStep $paramHigh`
 do
-	echo "param = $param"
-	cmd="$cmdBase --b=$param --r=$param"
-	filename="${filenameBase}_${param}"
+	thisParamFile=${filename}_${param}
+	for run in `seq 1 $runs`
+	do
+		echo "param = $param, run $run of $runs"
+		cmd="$cmdBase --b=$param --r=$param"
 
-	echo $param > $filename
-	$cmd >> $filename
+		$cmd >> ${thisParamFile}_${run}
+	done
+
+
+	writeTabulatedRuns $thisParamFile $runs
+
+	escapedParam=`echo $param | tr "." "p"`
+
+	echo "coop_$escapedParam = [" >> $filename
+	cat $thisParamFile >> $filename
+	echo -e "];\n" >> $filename
+
+	rm $thisParamFile
 done
 
-cat << EOF > $filenameBase
-% graphType = $graphType
-% N = $N
-% z = $z
-% replFraction = $replFraction
-% initialCoop = $initialCoop
-% gameType = $gameType
-% paramLow = $paramLow
-% paramStep = $paramStep
-% paramHigh = $paramHigh
-% iterations = $iterations
-EOF
+echo "params = [" >> $filename
+seq $paramLow $paramStep $paramHigh >> $filename
+echo -e "];\n" >> $filename
 
-allFiles=`seq $paramLow $paramStep $paramHigh | xargs printf "${filenameBase}_%s "`
-pr -tmJ -w100000 $allFiles >> ${filenameBase}
-rm $allFiles
+echo    "cooperativities = cat(3," >> $filename
+#bit of a hack
+echo -n "           coop_" >> $filename
+seq -s ", coop_" $paramLow $paramStep $paramHigh | tr "." "p" >> $filename
+echo -e ");\n" >> $filename
 

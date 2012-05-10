@@ -2,13 +2,12 @@
 
 N=1000
 #z=4
-iterations=10000
+iterations=20000
+runs=10
 
 paramLow="1"
 paramStep="0.1"
 paramHigh="2"
-
-replFraction="0.8"
 initialCoop="0.5"
 
 graphType=BAM
@@ -17,5 +16,5 @@ gameType=PD
 for z in 4 8 16 32
 do
 	echo "** z = $z"
-	./generateData $graphType $N $z $replFraction $initialCoop $gameType $paramLow $paramStep $paramHigh $iterations
+	./generateData $graphType $N $z $initialCoop $gameType $paramLow $paramStep $paramHigh $iterations $runs
 done
