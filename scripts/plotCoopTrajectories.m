@@ -43,6 +43,6 @@ for p = 1:nParams
 
 	plotfile = ["traj_",game,"_",graph,"_",int2str(nIteranions),"_",int2str(nRuns),"_",int2str(nNodes),"_",num2str(parameters(p)),".png"];
 	axis([0,1,0,1], 'autox');
-	print(["plots/",plotfile], "-dpng", "-r600", "-S4000,800");
+	print(["plots/",plotfile], "-dpng", "-r600", "-S3000,600");
 end
 
